@@ -1,4 +1,4 @@
-import { TR_STORAGE_KEY } from '@/utils/constant'
+import {TR_STORAGE_KEY} from '@/utils/constant'
 
 class Storage {
   constructor() {
@@ -15,12 +15,15 @@ class Storage {
 
   async set(key, value) {
     return new Promise((resolve, reject) => {
-      chrome.storage['local'].set({ [key]: value }, async _ => {
-        if (key === TR_STORAGE_KEY) {
-          chrome.runtime.sendMessage({ name: 'vocabularyChange' })
+      // 放到了 chrome.storage 里面
+      chrome.storage['local'].set(
+        {[key]: value}, async _ => {
+          if (key === TR_STORAGE_KEY) {
+            chrome.runtime.sendMessage({name: 'vocabularyChange'})
+          }
+          resolve()
         }
-        resolve()
-      })
+      )
     })
   }
 
@@ -36,7 +39,6 @@ class Storage {
           if (result[key] || typeof result[key] === 'boolean') {
             resolve(result[key])
           }
-
           resolve(defaultValue)
         })
       }

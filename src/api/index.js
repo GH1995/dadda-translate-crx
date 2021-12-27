@@ -91,6 +91,7 @@ export default {
               return this.sougouTranslate(text)
             }
           } else if (errorCode === '20') {
+            // todo 看不懂这里做什么
             const googleRes = await googleTranslate.translate(text)
             const {result = []} = googleRes
             const resultStr = result.join('')
