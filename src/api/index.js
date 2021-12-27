@@ -1,16 +1,21 @@
-import { google as googleTranslate } from 'translation.js'
-import { google, sougou, shanbay, cdn, youdao } from './client'
+// https://www.npmjs.com/package/translate-js
+// 字符串占位符替换
+import {google as googleTranslate} from 'translation.js'
+import {google, sougou, shanbay, cdn, youdao} from './client'
 import axios from 'axios'
-import { _sougouUuid } from '@/utils'
+// todo 不知道从哪里导入的
+import {_sougouUuid} from '@/utils'
 import md5 from 'md5'
-import { DADDA_ERRORS } from '../utils/constant'
+import {DADDA_ERRORS} from '../utils/constant'
 
 window.seccode = 8511813095152
 
-function _encodeReplacer(match) {
-  return encodeURIComponent(match)
-}
+// todo 不知道这个函数做什么
+const _encodeReplacer = match => encodeURIComponent(match)
 
+/*
+  将单词转义
+ */
 function _escape(text) {
   return (
     text
@@ -28,9 +33,9 @@ function _escape(text) {
 
 // 获取 seccode
 async function getSeccode() {
-  const { data: tokenInsertScript } = await axios.get(
+  const {data: tokenInsertScript} = await axios.get(
     'https://fanyi.sogou.com/logtrace',
-    { withCredentials: true }
+    {withCredentials: true}
   )
 
   // eslint-disable-next-line no-eval
@@ -39,6 +44,7 @@ async function getSeccode() {
 
 export default {
   sougouTranslate(text) {
+    // 取得凭据
     getSeccode()
     const from = 'auto'
     const to = 'zh-CHS'
@@ -63,40 +69,44 @@ export default {
       s
     }
 
+    // Object.entries 方法返回一个给定对象自身可枚举属性的键值对数组，其排列与使用 for...in 循环遍历该对象时返回的顺序一致
     const data = Object.entries(payload)
       .map(([k, v]) => k + '=' + v)
       .join('&')
 
-    return sougou.post('/reventondc/translate', data).then(async res => {
-      const { errorCode } = res.translate
+    return sougou.post('/reventondc/translate', data)
+      .then(
+        async res => {
+          const {errorCode} = res.translate
 
-      if (errorCode === '10') {
-        // Seccode not valid
-        const lastSecode = window.seccode
+          if (errorCode === '10') {
+            // Seccode not valid
+            const lastSecode = window.seccode
 
-        await getSeccode()
+            await getSeccode()
 
-        if (window.seccode === lastSecode) {
-          throw res
-        } else {
-          return this.sougouTranslate(text)
-        }
-      } else if (errorCode === '20') {
-        const googleRes = await googleTranslate.translate(text)
-        const { result = [] } = googleRes
-        const resultStr = result.join('')
+            if (window.seccode === lastSecode) {
+              throw res
+            } else {
+              return this.sougouTranslate(text)
+            }
+          } else if (errorCode === '20') {
+            const googleRes = await googleTranslate.translate(text)
+            const {result = []} = googleRes
+            const resultStr = result.join('')
 
-        return {
-          translate: {
-            errorCode: DADDA_ERRORS.VERIFICATION_NEEDED,
-            dit: resultStr,
-            source: 'google'
+            return {
+              translate: {
+                errorCode: DADDA_ERRORS.VERIFICATION_NEEDED,
+                dit: resultStr,
+                source: 'google'
+              }
+            }
           }
-        }
-      }
 
-      return res
-    })
+          return res
+        }
+      )
   },
 
   // ------------------------------ 扇 贝 ---------------------------------------------

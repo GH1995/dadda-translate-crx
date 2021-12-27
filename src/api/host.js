@@ -1,3 +1,4 @@
+// done
 export const GOOGLE_HOST = 'https://translate.google.cn'
 export const SOGOU_HOST = 'https://fanyi.sogou.com'
 export const CDN_HOST = 'https://cdn.grisoso.com'
